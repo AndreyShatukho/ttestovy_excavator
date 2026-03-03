@@ -52,10 +52,18 @@ class IncidentForm(forms.ModelForm):
         cleaned_data = super().clean()
         started_at = cleaned_data.get("started_at")
         resolved_at = cleaned_data.get("resolved_at")
+        now = timezone.now()
 
         if started_at and resolved_at and resolved_at < started_at:
             self.add_error(
                 "resolved_at",
                 "Дата решения не может быть раньше даты начала.",
+            )
+
+        # Active incidents use current datetime as implicit end time.
+        if started_at and not resolved_at and started_at > now:
+            self.add_error(
+                "started_at",
+                "Дата начала не может быть позже текущего времени.",
             )
         return cleaned_data

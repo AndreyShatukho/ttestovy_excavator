@@ -36,3 +36,19 @@ class RegistryTests(TestCase):
             description="Battery issue",
         )
         self.assertTrue(incident.downtime.total_seconds() >= 7800)
+
+    def test_open_incident_with_future_start_is_rejected(self):
+        future_start = timezone.localtime(timezone.now() + timedelta(hours=1)).strftime(
+            "%Y-%m-%dT%H:%M"
+        )
+        response = self.client.post(
+            reverse("registry:incident_create", args=[self.forklift.pk]),
+            {
+                "started_at": future_start,
+                "resolved_at": "",
+                "description": "Future incident",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Дата начала не может быть позже текущего времени.")
+        self.assertEqual(Incident.objects.count(), 0)
