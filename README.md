@@ -91,5 +91,5 @@ docker-compose down
 Что уже настроено:
 - production WSGI запуск через `gunicorn`;
 - статика через WhiteNoise;
-- автоприменение миграций/collectstatic в `build.sh`;
+- `collectstatic` на этапе build и миграции на старте сервиса;
 - подключение к БД через `DATABASE_URL`.
