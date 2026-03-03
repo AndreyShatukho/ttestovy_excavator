@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="layout-grid">
+    <aside class="side-nav">
+        <a class="menu-item" href="#">Пользователи</a>
+        <a class="menu-item" href="#">Уведомления и напоминания</a>
+        <a class="menu-item" href="#">Настройки АИС ОГПА</a>
+        <a class="menu-item active" href="#">Справочник погрузчиков</a>
+        <a class="menu-item" href="#">Резервное копирование и восстановление</a>
+        <a class="menu-item" href="#">Справочники</a>
+    </aside>
+
+    <section class="registry-panel">
+        <h2 class="registry-title">Справочник погрузчиков</h2>
+        <form class="registry-search" method="get">
+            <label for="q">Номер погрузчика</label>
+            <input id="q" name="q" value="{{ query }}" class="form-control form-control-sm">
+            <button class="btn btn-sm btn-red" type="submit">Искать</button>
+            <a class="btn btn-sm btn-link-gray" href="{% url 'registry:forklift_list' %}">Сбросить фильтр</a>
+        </form>
+
+        <div class="mb-2 d-flex flex-wrap gap-2">
+            <a class="btn btn-sm btn-red" href="{% url 'registry:forklift_list' %}?q={{ query }}&selected={{ selected_forklift.pk|default:'' }}&forklift_action=new">Добавить</a>
+            <button class="btn btn-sm btn-outline-secondary" type="button" disabled>Сохранить</button>
+            <button class="btn btn-sm btn-outline-secondary" type="button" disabled>Отменить</button>
+        </div>
+
+        <div class="table-shell">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover registry-table mb-0">
+                    <thead>
+                    <tr>
+                        <th>Текущий</th>
+                        <th>Код записи</th>
+                        <th>Марка</th>
+                        <th>Номер</th>
+                        <th>Грузоподъем-<br>ность</th>
+                        <th>Активен</th>
+                        <th>Время и Дата<br>изменения</th>
+                        <th>Пользователь</th>
+                        <th>Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for forklift in forklifts %}
+                        <tr
+                            class="selectable-row {% if selected_forklift and selected_forklift.pk == forklift.pk %}table-primary{% endif %}"
+                            data-select-url="?q={{ query }}&selected={{ forklift.pk }}"
+                        >
+                            <td>
+                                <input
+                                    type="radio"
+                                    class="row-selector"
+                                    name="current_forklift"
+                                    {% if selected_forklift and selected_forklift.pk == forklift.pk %}checked{% endif %}
+                                    aria-label="Выбранный погрузчик {{ forklift.number }}"
+                                >
+                            </td>
+                            <td>
+                                <a class="select-link" href="?q={{ query }}&selected={{ forklift.pk }}">{{ forklift.pk }}</a>
+                            </td>
+                            <td>{{ forklift.brand }}</td>
+                            <td>{{ forklift.number }}</td>
+                            <td>{{ forklift.capacity }}</td>
+                            <td>{% if forklift.is_active %}✔{% else %}✖{% endif %}</td>
+                            <td>{{ forklift.modified_at|date:"d.m.Y H:i" }}</td>
+                            <td>{{ forklift.updated_by }}</td>
+                            <td class="actions-cell">
+                                <a
+                                    class="icon-link"
+                                    title="Изменить"
+                                    href="{% url 'registry:forklift_list' %}?q={{ query }}&selected={{ forklift.pk }}&forklift_action=edit&forklift_id={{ forklift.pk }}"
+                                >✎</a>
+                                <form
+                                    method="post"
+                                    action="{% url 'registry:forklift_delete' forklift.pk %}"
+                                    class="d-inline delete-confirm-form"
+                                    data-confirm-message="Удалить погрузчик? Вы уверены?"
+                                    id="delete-forklift-{{ forklift.pk }}"
+                                >
+                                    {% csrf_token %}
+                                    <button
+                                        type="button"
+                                        class="icon-btn delete-action-btn"
+                                        title="Удалить"
+                                        data-form-id="delete-forklift-{{ forklift.pk }}"
+                                        data-confirm-message="Удалить погрузчик? Вы уверены?"
+                                    >✖</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4">Нет данных</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="incidents-panel">
+        <div class="incidents-title-row">
+            <h3>Простои по погрузчику</h3>
+            {% if selected_forklift %}<span>{{ selected_forklift.number }}</span>{% endif %}
+        </div>
+        {% if selected_forklift %}
+            <a class="btn btn-sm btn-red mb-2" href="{% url 'registry:forklift_list' %}?q={{ query }}&selected={{ selected_forklift.pk }}&incident_action=new">Добавить</a>
+        {% endif %}
+        <div class="table-shell">
+            <div class="table-responsive">
+                <table class="table table-sm registry-table mb-0">
+                    <thead>
+                    <tr>
+                        <th>Код записи</th>
+                        <th>Начало</th>
+                        <th>Окончание</th>
+                        <th>Время<br>простоя</th>
+                        <th>Причина</th>
+                        <th>Действия</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for incident in incidents %}
+                        <tr>
+                            <td>{{ incident.pk }}</td>
+                            <td>{{ incident.started_at|date:"d.m.Y H:i" }}</td>
+                            <td>{% if incident.resolved_at %}{{ incident.resolved_at|date:"d.m.Y H:i" }}{% else %}Текущий{% endif %}</td>
+                            <td>{{ incident.downtime_hhmm }}</td>
+                            <td>{{ incident.description }}</td>
+                            <td class="actions-cell">
+                                <a
+                                    class="icon-link"
+                                    title="Изменить"
+                                    href="{% url 'registry:forklift_list' %}?q={{ query }}&selected={{ selected_forklift.pk }}&incident_action=edit&incident_id={{ incident.pk }}"
+                                >✎</a>
+                                <form
+                                    method="post"
+                                    action="{% url 'registry:incident_delete' incident.pk %}"
+                                    class="d-inline delete-confirm-form"
+                                    data-confirm-message="Удалить информацию о простое? Вы уверены?"
+                                    id="delete-incident-{{ incident.pk }}"
+                                >
+                                    {% csrf_token %}
+                                    <button
+                                        type="button"
+                                        class="icon-btn delete-action-btn"
+                                        title="Удалить"
+                                        data-form-id="delete-incident-{{ incident.pk }}"
+                                        data-confirm-message="Удалить информацию о простое? Вы уверены?"
+                                    >✖</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">Для выбранного погрузчика простои не зарегистрированы.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+
+{% if forklift_form and forklift_form_action %}
+<div class="modal fade" id="forkliftModal" tabindex="-1" aria-labelledby="forkliftModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content task-modal">
+            <form method="post" action="{{ forklift_form_action }}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="forkliftModalLabel">{{ forklift_modal_title }}</h5>
+                    <a href="{% url 'registry:forklift_list' %}?q={{ query }}&selected={{ selected_forklift.pk|default:'' }}" class="btn-close"></a>
+                </div>
+                <div class="modal-body row g-3">
+                    {{ forklift_form.non_field_errors }}
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ forklift_form.brand.id_for_label }}">Марка</label>
+                        {{ forklift_form.brand }}
+                        <div class="text-danger small">{{ forklift_form.brand.errors }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ forklift_form.number.id_for_label }}">Номер</label>
+                        {{ forklift_form.number }}
+                        <div class="text-danger small">{{ forklift_form.number.errors }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ forklift_form.capacity.id_for_label }}">Грузоподъемность</label>
+                        {{ forklift_form.capacity }}
+                        <div class="text-danger small">{{ forklift_form.capacity.errors }}</div>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="form-check">
+                            {{ forklift_form.is_active }}
+                            <label class="form-check-label" for="{{ forklift_form.is_active.id_for_label }}">Активен</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-around">
+                    <button type="submit" class="btn btn-red px-5">Сохранить</button>
+                    <a href="{% url 'registry:forklift_list' %}?q={{ query }}&selected={{ selected_forklift.pk|default:'' }}"
+                       class="btn btn-gray px-5"
+                       onclick="return confirm('Не сохранять внесенные изменения? Вы уверены?')">Выход</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if incident_form and incident_form_action %}
+<div class="modal fade" id="incidentModal" tabindex="-1" aria-labelledby="incidentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content task-modal">
+            <form method="post" action="{{ incident_form_action }}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="incidentModalLabel">{{ incident_modal_title }}</h5>
+                    <a href="{% url 'registry:forklift_list' %}?q={{ query }}&selected={{ selected_forklift.pk }}" class="btn-close"></a>
+                </div>
+                <div class="modal-body row g-3">
+                    {{ incident_form.non_field_errors }}
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ incident_form.started_at.id_for_label }}">Дата и время начала *</label>
+                        {{ incident_form.started_at }}
+                        <div class="text-danger small">{{ incident_form.started_at.errors }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ incident_form.resolved_at.id_for_label }}">Дата и время окончания</label>
+                        {{ incident_form.resolved_at }}
+                        <div class="text-danger small">{{ incident_form.resolved_at.errors }}</div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="{{ incident_form.description.id_for_label }}">Описание проблемы</label>
+                        {{ incident_form.description }}
+                        <div class="text-danger small">{{ incident_form.description.errors }}</div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-around">
+                    <button type="submit" class="btn btn-red px-5">Сохранить</button>
+                    <a href="{% url 'registry:forklift_list' %}?q={{ query }}&selected={{ selected_forklift.pk }}"
+                       class="btn btn-gray px-5"
+                       onclick="return confirm('Не сохранять внесенные изменения? Вы уверены?')">Выход</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content task-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteConfirmText" class="mb-0">Удалить запись? Вы уверены?</p>
+            </div>
+            <div class="modal-footer justify-content-around">
+                <button type="button" class="btn btn-red px-4" id="confirmDeleteBtn">Да, удалить</button>
+                <button type="button" class="btn btn-gray px-4" data-bs-dismiss="modal">Отмена</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var forkliftModalElement = document.getElementById("forkliftModal");
+        var modalElement = document.getElementById("incidentModal");
+        if (forkliftModalElement) {
+            new bootstrap.Modal(forkliftModalElement).show();
+        }
+        if (modalElement) {
+            new bootstrap.Modal(modalElement).show();
+        }
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var deleteModalElement = document.getElementById("deleteConfirmModal");
+        var deleteTextElement = document.getElementById("deleteConfirmText");
+        var deleteConfirmBtn = document.getElementById("confirmDeleteBtn");
+        var deleteModal = new bootstrap.Modal(deleteModalElement);
+        var pendingDeleteForm = null;
+
+        document.querySelectorAll(".selectable-row").forEach(function (row) {
+            row.addEventListener("click", function (event) {
+                if (event.target.closest("a, button, form")) {
+                    return;
+                }
+                window.location.href = row.dataset.selectUrl;
+            });
+        });
+
+        document.querySelectorAll(".delete-action-btn").forEach(function (button) {
+            button.addEventListener("click", function () {
+                var formId = button.dataset.formId;
+                pendingDeleteForm = document.getElementById(formId);
+                deleteTextElement.textContent =
+                    button.dataset.confirmMessage || "Удалить запись? Вы уверены?";
+                deleteModal.show();
+            });
+        });
+
+        deleteConfirmBtn.addEventListener("click", function () {
+            if (pendingDeleteForm) {
+                pendingDeleteForm.submit();
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,250 @@
+body {
+    margin: 0;
+    background: #f4f4f4;
+    font-family: Arial, sans-serif;
+}
+
+.app-shell {
+    max-width: 1250px;
+    margin: 8px auto;
+    border: 1px solid #d61a1a;
+    border-radius: 10px;
+    background: #efefef;
+    overflow: hidden;
+}
+
+.top-header {
+    height: 58px;
+    background: #d40000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 14px;
+}
+
+.profile-btn {
+    background: #f2f2f2;
+    border: 1px solid #c6c6c6;
+    border-radius: 10px;
+    min-width: 108px;
+    padding: 5px 14px;
+    font-weight: 600;
+}
+
+.main-content {
+    padding: 10px;
+}
+
+.messages-wrap {
+    margin-bottom: 8px;
+}
+
+.layout-grid {
+    display: grid;
+    grid-template-columns: 112px minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: 12px;
+}
+
+.side-nav {
+    background: #dddddd;
+    border-radius: 10px;
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.menu-item {
+    color: #2d2d2d;
+    text-decoration: none;
+    font-size: 29px;
+    line-height: 1.1;
+}
+
+.menu-item.active {
+    color: #d40000;
+}
+
+.registry-panel,
+.incidents-panel {
+    background: #dddddd;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.registry-title {
+    font-size: 38px;
+    margin: 0 0 8px;
+    font-weight: 700;
+}
+
+.registry-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.registry-search label {
+    font-size: 15px;
+    margin: 0;
+}
+
+.registry-search input {
+    max-width: 170px;
+    border-radius: 999px;
+}
+
+.btn-red {
+    background: #d40000;
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.btn-red:hover,
+.btn-red:focus {
+    background: #b60000;
+    color: #fff;
+}
+
+.btn-gray {
+    background: #a2a2a2;
+    color: #111;
+    border-radius: 0;
+}
+
+.btn-link-gray {
+    color: #707070;
+    text-decoration: none;
+}
+
+.table-shell {
+    background: #ededed;
+    border: 1px solid #d3d3d3;
+    max-height: 490px;
+    overflow: auto;
+}
+
+.registry-table th,
+.registry-table td {
+    font-size: 11px;
+    vertical-align: middle;
+    border-color: #d8d8d8;
+    white-space: nowrap;
+}
+
+.select-link {
+    color: #202020;
+    text-decoration: none;
+}
+
+.actions-cell {
+    text-align: center;
+    min-width: 56px;
+}
+
+.selectable-row {
+    cursor: pointer;
+}
+
+.row-selector {
+    pointer-events: none;
+}
+
+.icon-link,
+.icon-btn {
+    color: #676767;
+    font-weight: 700;
+    border: 0;
+    background: transparent;
+    text-decoration: none;
+    margin: 0 2px;
+}
+
+.incidents-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.incidents-title-row h3 {
+    margin: 0;
+    font-size: 34px;
+    font-weight: 700;
+}
+
+.incidents-title-row span {
+    font-size: 34px;
+    color: #444;
+}
+
+.task-modal .modal-header {
+    border-bottom: 2px solid #d40000;
+}
+
+.task-modal .modal-title {
+    width: 100%;
+    text-align: center;
+    font-size: 24px;
+}
+
+.task-modal .modal-content {
+    border-radius: 20px;
+    background: #e4e4e4;
+}
+
+@media (max-width: 1100px) {
+    .layout-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .side-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .menu-item {
+        font-size: 18px;
+    }
+
+    .registry-title,
+    .incidents-title-row h3,
+    .incidents-title-row span {
+        font-size: 30px;
+    }
+}
+
+@media (max-width: 700px) {
+    .app-shell {
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .main-content {
+        padding: 8px;
+    }
+
+    .registry-title,
+    .incidents-title-row h3,
+    .incidents-title-row span {
+        font-size: 24px;
+    }
+
+    .side-nav {
+        grid-template-columns: 1fr;
+    }
+
+    .registry-search {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .registry-search input {
+        max-width: none;
+        width: 100%;
+    }
+}

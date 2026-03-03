@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Справочник погрузчиков</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/registry.css">
+</head>
+<body>
+<div class="app-shell">
+    <header class="top-header">
+        <div></div>
+        <button class="profile-btn" type="button">Профиль</button>
+    </header>
+
+    <main class="main-content">
+        {% if messages %}
+            <div class="messages-wrap">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags|default:'info' }} py-2 mb-2" role="alert">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

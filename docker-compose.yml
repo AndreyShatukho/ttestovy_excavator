@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: forklift_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-forklift_db}
+      POSTGRES_USER: ${POSTGRES_USER:-forklift_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-forklift_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-forklift_user} -d ${POSTGRES_DB:-forklift_db}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:
